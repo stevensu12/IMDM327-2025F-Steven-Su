@@ -80,7 +80,7 @@ public class ThreeBody : MonoBehaviour
     private Vector3 CalculateGravity(Vector3 distanceVector, float m1, float m2)
     {
         Vector3 gravity = new Vector3(0f,0f,0f); // note this is also Vector3
-       // **** Fill in the function below. Gravity = G * m1 * m2 / (distance^2). So we need G, m1, m2, distance, + direction
+       // **** Fill in the function below. 
         // gravity = ****;
         return gravity;
     }
