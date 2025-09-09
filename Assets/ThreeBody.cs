@@ -8,7 +8,7 @@ using UnityEngine.Animations;
 
 public class ThreeBody : MonoBehaviour
 {
-    private const float G = 500f; // Gravity constant
+    private const float G = 500f; // Gravity constant https://en.wikipedia.org/wiki/Gravitational_constant
     GameObject[] body;
     BodyProperty[] bp;
     private int numberOfSphere = 3;
