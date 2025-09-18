@@ -31,20 +31,24 @@ public class ThreeBody : MonoBehaviour
         for (int i = 0; i < numberOfSphere; i++)
         {          
             // Our gameobjects are created here:
-            body[i] = GameObject.CreatePrimitive(PrimitiveType.Cube); // why sphere? try different options.
+            body[i] = GameObject.CreatePrimitive(PrimitiveType.Sphere); // why sphere? try different options.
             // https://docs.unity3d.com/ScriptReference/GameObject.CreatePrimitive.html
 
             // initial conditions
-            float r = 100f;
+            float r = 5f; //100f
             // position is (x,y,z). In this case, I want to plot them on the circle with r
 
             // ******** Fill in this part ********
             // body[i].transform.position = new Vector3( ***, *** , 180);
             // z = 180 to see this happen in front of me. Try something else (randomize) too.
 
-            bp[i].velocity = new Vector3(0,0,0); // Try different initial condition
-            bp[i].mass = 1; // Simplified. Try different initial condition
+            float angle = i * Mathf.PI * 2f / numberOfSphere;
+            float x = Mathf.Cos(angle) * r;
+            float y = Mathf.Sin(angle) * r;
+            body[i].transform.position = new Vector3(x, y, 0f);
 
+            bp[i].velocity = new Vector3(0,0,0); // 0,0,0 Try different initial condition
+            bp[i].mass = 1; // Simplified. Try different initial condition
 
             // + This is just pretty trails
             trailRenderer = body[i].AddComponent<TrailRenderer>();
