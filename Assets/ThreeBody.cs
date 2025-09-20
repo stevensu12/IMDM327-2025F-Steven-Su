@@ -105,7 +105,7 @@ public class ThreeBody : MonoBehaviour
     {
         float temp = distanceVector.magnitude;
         if (temp <= 0f) temp = 0.1f;
-        float magnitude = G * m1 * m2 / temp;
+        float magnitude = G * m1 * m2 / (temp * temp);
         Vector3 gravity = distanceVector * magnitude;
         return gravity;
     }
