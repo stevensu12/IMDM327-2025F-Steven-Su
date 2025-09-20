@@ -83,11 +83,13 @@ public class ThreeBody : MonoBehaviour
             // Something
             for (int j = 0; j < numberOfSphere; j++)
             {
-                if (i == j) continue;
-                Vector3 vector = body[j].transform.position - body[i].transform.position;
-                Vector3 force = CalculateGravity(vector, bp[i].mass, bp[j].mass);
+                if (i != j)
+                {
+                    Vector3 temp = body[j].transform.position - body[i].transform.position;
+                    Vector3 force = CalculateGravity(temp, bp[i].mass, bp[j].mass);
 
-                bp[i].acceleration += force / bp[i].mass;
+                    bp[i].acceleration += force / bp[i].mass;
+                }
             }
         }
 
@@ -101,16 +103,10 @@ public class ThreeBody : MonoBehaviour
     // Gravity Fuction to finish
     private Vector3 CalculateGravity(Vector3 distanceVector, float m1, float m2)
     {
-        Vector3 gravity = new Vector3(0f,0f,0f); // note this is also Vector3
-                                                 // **** Fill in the function below. 
-                                                 // gravity = ****;
-
-        float temp = distanceVector.sqrMagnitude;
-
+        float temp = distanceVector.magnitude;
         if (temp <= 0f) temp = 0.1f;
-
-            float magnitude = G * m1 * m2 / temp;
-        gravity = distanceVector.normalized * magnitude;
+        float magnitude = G * m1 * m2 / temp;
+        Vector3 gravity = distanceVector * magnitude;
         return gravity;
     }
 }
