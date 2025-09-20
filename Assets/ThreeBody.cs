@@ -11,7 +11,7 @@ public class ThreeBody : MonoBehaviour
     private const float G = 500f; // Gravity constant https://en.wikipedia.org/wiki/Gravitational_constant
     GameObject[] body;
     BodyProperty[] bp;
-    private int numberOfSphere = 3;
+    private int numberOfSphere = 100;
     TrailRenderer trailRenderer;
     struct BodyProperty // why struct?
     {                   // https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/choosing-between-class-and-struct
@@ -35,20 +35,23 @@ public class ThreeBody : MonoBehaviour
             // https://docs.unity3d.com/ScriptReference/GameObject.CreatePrimitive.html
 
             // initial conditions
-            float r = 5f; //100f
-            // position is (x,y,z). In this case, I want to plot them on the circle with r
+            float r = 40f;
 
             // ******** Fill in this part ********
             // body[i].transform.position = new Vector3( ***, *** , 180);
             // z = 180 to see this happen in front of me. Try something else (randomize) too.
 
+            // place bodies evenly in a circle shape
             float angle = i * Mathf.PI * 2f / numberOfSphere;
             float x = Mathf.Cos(angle) * r;
             float y = Mathf.Sin(angle) * r;
             body[i].transform.position = new Vector3(x, y, 0f);
 
-            bp[i].velocity = new Vector3(0,0,0); // 0,0,0 Try different initial condition
-            bp[i].mass = 1; // Simplified. Try different initial condition
+            // randomizing mass and velocity
+            bp[i].mass = Random.Range(0.01f, 0.2f);
+            bp[i].velocity = new Vector3(Random.Range(-0.05f, 0.05f), Random.Range(-0.05f, 0.05f), 0);
+
+            //--------------------
 
             // + This is just pretty trails
             trailRenderer = body[i].AddComponent<TrailRenderer>();
@@ -73,19 +76,41 @@ public class ThreeBody : MonoBehaviour
     {
         // Loop for N-body gravity
         // How should we design the loop?
+        for (int i = 0; i < numberOfSphere; i++) bp[i].acceleration = Vector3.zero;
+
         for (int i = 0; i < numberOfSphere; i++)
         {
             // Something
+            for (int j = 0; j < numberOfSphere; j++)
+            {
+                if (i == j) continue;
+                Vector3 vector = body[j].transform.position - body[i].transform.position;
+                Vector3 force = CalculateGravity(vector, bp[i].mass, bp[j].mass);
+
+                bp[i].acceleration += force / bp[i].mass;
+            }
         }
 
+        for (int i = 0; i < numberOfSphere; i++)
+        {
+            bp[i].velocity += bp[i].acceleration * Time.deltaTime;
+            body[i].transform.position += bp[i].velocity * Time.deltaTime;
+        }
     }
 
     // Gravity Fuction to finish
     private Vector3 CalculateGravity(Vector3 distanceVector, float m1, float m2)
     {
         Vector3 gravity = new Vector3(0f,0f,0f); // note this is also Vector3
-       // **** Fill in the function below. 
-        // gravity = ****;
+                                                 // **** Fill in the function below. 
+                                                 // gravity = ****;
+
+        float temp = distanceVector.sqrMagnitude;
+
+        if (temp <= 0f) temp = 0.1f;
+
+            float magnitude = G * m1 * m2 / temp;
+        gravity = distanceVector.normalized * magnitude;
         return gravity;
     }
 }
