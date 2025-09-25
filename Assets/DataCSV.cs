@@ -14,6 +14,7 @@ public struct BodyProperty
 
 public class DataCSV : MonoBehaviour
 {
+    public bool isScene3WithNewPlanets;
     [SerializeField] GameObject sceneCamera;
     private const float G = 500f;
     public BodyProperty[] bp;
@@ -102,6 +103,7 @@ public class DataCSV : MonoBehaviour
         // Load Assets/Resources/solar.csv (omit extension)
         // https://docs.unity3d.com/6000.3/Documentation/ScriptReference/Resources.Load.html
         TextAsset csv = Resources.Load<TextAsset>("solar"); 
+        if (isScene3WithNewPlanets) csv = Resources.Load<TextAsset>("solar 1"); 
         if (csv == null) // - Safer
         {
             Debug.LogError("Resources/solar.csv not found.");
