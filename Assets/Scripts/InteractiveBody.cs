@@ -150,20 +150,20 @@ public class InteractiveBody : MonoBehaviour
 
 
         // (Force) Interactive Acceleration : reacts to the actuation of the interactive point
-        if (mp == null)
+        /*if (mp == null)
         {
             mp = FindObjectOfType<MediaPipeBodyTracker>();
             if (mp == null)
             {
                 return;
             }
-        }
+        }*/
 
         Vector3 rightHandOffset = new Vector3(100f, 100f, 180f);
-        interactPoint = -mp.RightHandPosition * 200f + rightHandOffset;
+        interactPoint = /*-mp.RightHandPosition * 200f +*/ rightHandOffset;
         float actuation = 1f+ (previousInteractivePoint - interactPoint).sqrMagnitude;
-        if (mp.RightHandPinch)
-        {
+        //if (mp.RightHandPinch)
+        //{
             for (int i = 0; i < numberOfSphere; i++)
             {
                 Vector3 distance = interactPoint - body[i].transform.position;
@@ -171,7 +171,7 @@ public class InteractiveBody : MonoBehaviour
             }
             previousInteractivePoint = interactPoint;
             // G = 1f + actuation * 0.01f;
-        }
+        //}
 
         // Apply acceleration to velocity, to position
         for (int i = 0; i < numberOfSphere; i++)

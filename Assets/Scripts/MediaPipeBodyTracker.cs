@@ -10,7 +10,7 @@ public class MediaPipeBodyTracker : MonoBehaviour
     [Header("Graph Source")]
     [SerializeField] private HolisticTrackingGraph graphRunner;
 
-    [Header("Hand Data")]
+    /*[Header("Hand Data")]
     [SerializeField] private Vector3 leftHandPosition;
     [SerializeField] private bool leftHandPinch;
     [SerializeField] private Vector3 rightHandPosition;
@@ -18,7 +18,7 @@ public class MediaPipeBodyTracker : MonoBehaviour
 
     [Header("Body Data")]
     [SerializeField] private Vector3 torsoPosition;
-    [SerializeField] private Vector3 headPosition;
+    [SerializeField] private Vector3 headPosition;*/
 
     [Header("Debug / Diagnostics")]
     [SerializeField] private bool verboseLogging = false;
@@ -46,12 +46,12 @@ public class MediaPipeBodyTracker : MonoBehaviour
     private bool hasSubscriptions;
     private HolisticTrackingGraph subscribedRunner;
 
-    public Vector3 LeftHandPosition => leftHandPosition;
+    /*public Vector3 LeftHandPosition => leftHandPosition;
     public bool LeftHandPinch => leftHandPinch;
     public Vector3 RightHandPosition => rightHandPosition;
     public bool RightHandPinch => rightHandPinch;
     public Vector3 TorsoPosition => torsoPosition;
-    public Vector3 HeadPosition => headPosition;
+    public Vector3 HeadPosition => headPosition;*/
 
     private void OnEnable()
     {
@@ -154,7 +154,7 @@ public class MediaPipeBodyTracker : MonoBehaviour
     {
         lock (dataLock)
         {
-            if (leftDirty)
+            /*if (leftDirty)
             {
                 if (leftHandTracked)
                 {
@@ -200,7 +200,7 @@ public class MediaPipeBodyTracker : MonoBehaviour
                 }
 
                 poseDirty = false;
-            }
+            }*/
         }
     }
 

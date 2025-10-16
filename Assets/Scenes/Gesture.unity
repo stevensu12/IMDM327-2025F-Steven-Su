@@ -901,6 +901,7 @@ MonoBehaviour:
   interactPoint: {x: 0, y: 0, z: 0}
   interactiveMass: 1000
   maxVelocity: 100
+  closeDistance: 0
 --- !u!4 &685549700
 Transform:
   m_ObjectHideFlags: 0
@@ -1839,12 +1840,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   graphRunner: {fileID: 275874968}
-  leftHandPosition: {x: 0, y: 0, z: 0}
-  leftHandPinch: 0
-  rightHandPosition: {x: 0, y: 0, z: 0}
-  rightHandPinch: 0
-  torsoPosition: {x: 0, y: 0, z: 0}
-  headPosition: {x: 0, y: 0, z: 0}
   verboseLogging: 0
   leftHandPacketCount: 0
   rightHandPacketCount: 0
