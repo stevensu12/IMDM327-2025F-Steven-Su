@@ -381,8 +381,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ff7e05b6286ddf74d94411fe2c28d54b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isScene3WithNewPlanets: 1
-  sceneCamera: {fileID: 963194225}
   bp: []
 --- !u!4 &1389239868
 Transform:
