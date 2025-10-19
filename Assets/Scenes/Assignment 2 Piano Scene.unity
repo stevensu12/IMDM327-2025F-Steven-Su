@@ -1449,12 +1449,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   G: 1
-  fastforwardConst: 10
+  fastforwardConst: 5
+  tRTime: 0.6
+  tRStartWidth: 0.5
+  tREndWidth: 0.1
   interactPoint: {x: 0, y: 0, z: 0}
-  interactiveMass: 30
-  maxVelocity: 2
-  closeDistance: 16
-  spherePosition: {x: 0, y: 0, z: 100}
+  interactiveMass: 15
+  maxVelocity: 9
+  closeDistance: 1000
+  followPosition: {x: 0, y: 0, z: 180}
 --- !u!4 &685549700
 Transform:
   m_ObjectHideFlags: 0
@@ -3016,6 +3019,8 @@ MonoBehaviour:
   - {fileID: 1269225953}
   attackTime: 0.1
   releaseTime: 0.25
+  yAmplitude: 20
+  yLerp: 10
 --- !u!4 &1297041078
 Transform:
   m_ObjectHideFlags: 0

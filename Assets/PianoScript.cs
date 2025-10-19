@@ -11,10 +11,15 @@ public class PianoScript : MonoBehaviour
 
     public float attackTime = 0.05f;
     public float releaseTime = 0.2f;
+    public float yAmplitude = 20f;
+    public float yLerp = 10f; 
     
     private Vector3[] originalObjScales;
     private Vector3[] originalObjPositions;
     private Coroutine[] activeCoroutines;
+    private bool noKeyPressed = false;
+    private float targetY = 0f;
+    private float currentY = 0f;
 
     void Start(){
         originalObjScales = new Vector3[PianoKeyObjects.Count];
@@ -29,11 +34,26 @@ public class PianoScript : MonoBehaviour
     }
 
     void Update(){
+        // Check if any key is currently pressed
+        noKeyPressed = true;
+        for (int i = 0; i < keyButtons.Count; i++){
+            if (Input.GetKey(keyButtons[i])){
+                noKeyPressed = false;
+                break;
+            }
+        }
+        if (noKeyPressed) targetY = 0;
+        else targetY = yAmplitude;
+
+        
+        // Lerp currentY towards targetY
+        currentY = Mathf.Lerp(currentY, targetY, Time.deltaTime * yLerp);
+        
         for (int i = 0; i < keyButtons.Count; i++){
             if (Input.GetKeyDown(keyButtons[i])){
 
                 //setting position for interactive body
-                interactiveBody.followPosition = new Vector3(i * 20f - 80f, interactiveBody.followPosition.y, interactiveBody.followPosition.z);
+                interactiveBody.followPosition = new Vector3(i * 20f - 80f, currentY, interactiveBody.followPosition.z);
 
                 if (activeCoroutines[i] != null) // makes playing feel smoother
                 {
@@ -48,6 +68,9 @@ public class PianoScript : MonoBehaviour
                 activeCoroutines[i] = StartCoroutine(FadeOutRelease(audioSources[i], i));
             }
         }
+        
+        // Update y position continuously
+        interactiveBody.followPosition = new Vector3(interactiveBody.followPosition.x, currentY, interactiveBody.followPosition.z);
     }
 
     IEnumerator FadeInAttack(AudioSource aS, int index){
