@@ -14,6 +14,9 @@ public class InteractiveBody : MonoBehaviour
     private int numberOfSphere = 200;
     public float fastforwardConst = 1f;
     TrailRenderer[] trailRenderer;
+    public float tRTime = 5.0f;
+    public float tRStartWidth = 0.7f;
+    public float tREndWidth = 0.1f;
     private GameObject interactivePoint;
     public Vector3 interactPoint;// where to interact 
     private Vector3 previousInteractivePoint; 
@@ -33,21 +36,21 @@ public class InteractiveBody : MonoBehaviour
 
     void Start()
     {
-        if (mp == null)
+        /*if (mp == null)
         {
             mp = FindObjectOfType<MediaPipeBodyTracker>();
             if (mp == null)
             {
                 Debug.LogWarning("InteractiveBody could not locate a MediaPipeBodyTracker in the scene.");
             }
-        }
+        }*/
         // init condition
-        maxVelocity = 30f;
-        interactiveMass = 30f;
-        closeDistance = 16f; // sqrt value
+        //maxVelocity = 30f;
+        //interactiveMass = 30f;
+        //closeDistance = 16f; // sqrt value
         // interactive point 
-        interactivePoint = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        interactivePoint.transform.position = new Vector3(0f, 0f, 0f);
+        interactivePoint = new GameObject();//GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        interactivePoint.transform.position = new Vector3(0f, 0f, 180f);
         // Just like GO, computer should know how many room for struct is required:
         bp = new BodyProperty[numberOfSphere];
         body = new GameObject[numberOfSphere];
@@ -75,9 +78,9 @@ public class InteractiveBody : MonoBehaviour
             // + This is just pretty trails
             trailRenderer[i] = body[i].AddComponent<TrailRenderer>();
             // Configure the TrailRenderer's properties
-            trailRenderer[i].time = 5.0f;  // Duration of the trail
-            trailRenderer[i].startWidth = 0.7f;  // Width of the trail at the start
-            trailRenderer[i].endWidth = 0.1f;    // Width of the trail at the end
+            trailRenderer[i].time = tRTime;  // Duration of the trail
+            trailRenderer[i].startWidth = tRStartWidth;  // Width of the trail at the start
+            trailRenderer[i].endWidth = tREndWidth;    // Width of the trail at the end
             // a material to the trail
             trailRenderer[i].material = new Material(Shader.Find("Sprites/Default"));
             // Set the trail color
@@ -96,6 +99,8 @@ public class InteractiveBody : MonoBehaviour
 
         }
     }
+
+    public Vector3 followPosition = new Vector3(0f, 0f, 0f);
 
     void FixedUpdate()
     {
@@ -159,7 +164,8 @@ public class InteractiveBody : MonoBehaviour
             }
         }*/
 
-        Vector3 rightHandOffset = new Vector3(100f, 100f, 180f);
+        //Vector3 rightHandOffset = new Vector3(100f, 100f, 180f);
+        Vector3 rightHandOffset = followPosition;
         interactPoint = /*-mp.RightHandPosition * 200f +*/ rightHandOffset;
         float actuation = 1f+ (previousInteractivePoint - interactPoint).sqrMagnitude;
         //if (mp.RightHandPinch)
