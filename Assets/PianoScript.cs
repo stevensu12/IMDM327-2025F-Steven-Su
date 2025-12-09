@@ -137,10 +137,19 @@ public class PianoScript : MonoBehaviour
 
     // think of method like a camera: each sample is like an individual frame, 
     // connecting and playing them quickly together creates a "moving" image 
-    // or in this case a continous sound
+    // or in this case a continuous sound
+
+    float frequency = 0;
     void OnAudioFilterRead(float[] data, int channels)
     {
-        float frequency = 440f; // A4 note for testing
+        if (frequency <= 0)
+        {
+            for (int i = 0; i < data.Length; i++)
+            {
+                data[i] = 0f;
+            }
+            return;
+        }
         
         // loop through data array to process each audio sample at a time
         for (int i = 0; i < data.Length; i += channels)
@@ -157,5 +166,31 @@ public class PianoScript : MonoBehaviour
             // move time forward by the duration of one sample 
             onAudioTime += 1f / sampleRate;
         }
+    }
+
+    public void MIDINoteOn(int noteNum, float velocity){
+        frequency = 440f * Mathf.Pow(2f, (noteNum - 69f) / 12f);
+        Debug.Log("calculated frequency: " + frequency);
+
+        int keyIndex = noteNum - 60; 
+        if (keyIndex < 0 || keyIndex >= PianoKeyObjects.Count) return;
+
+        // animate press
+        if (activeCoroutines[keyIndex] != null)
+            StopCoroutine(activeCoroutines[keyIndex]);
+
+        activeCoroutines[keyIndex] = StartCoroutine(FadeInAttack(keyIndex));
+    }
+
+    public void MIDINoteOff(int noteNum)
+    {
+        frequency = 0;
+        int keyIndex = noteNum - 60;
+        if (keyIndex < 0 || keyIndex >= PianoKeyObjects.Count) return;
+
+        if (activeCoroutines[keyIndex] != null)
+            StopCoroutine(activeCoroutines[keyIndex]);
+
+        activeCoroutines[keyIndex] = StartCoroutine(FadeOutRelease(keyIndex));
     }
 }

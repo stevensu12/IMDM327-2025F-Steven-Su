@@ -5,6 +5,7 @@ using Minis;   // jp.keijiro.minis
 
 public class PrintMIDI : MonoBehaviour
 {
+    public PianoScript piano;
     void OnEnable()
     {
         // Register all existing devices
@@ -60,18 +61,20 @@ public class PrintMIDI : MonoBehaviour
         midi.onWillChannelPressure -= OnChannelPressure;
         midi.onWillPitchBend       -= OnPitchBend;
 
-        Debug.Log($"[MIDI] Unregistered: {midi.description}");
+        //Debug.Log($"[MIDI] Unregistered: {midi.description}");
     }
 
     // Note on: strike (initial hit)
     void OnNoteOn(MidiNoteControl note, float velocity)
     {
+        piano.MIDINoteOn(note.noteNumber, velocity);  
         Debug.Log($"NOTE ON    dev={note.device} note={note.noteNumber} vel={velocity:0.000}");
     }
 
     // Note off: lift (release)
     void OnNoteOff(MidiNoteControl note)
     {
+        piano.MIDINoteOff(note.noteNumber);
         Debug.Log($"NOTE OFF   dev={note.device} note={note.noteNumber}");
     }
 
