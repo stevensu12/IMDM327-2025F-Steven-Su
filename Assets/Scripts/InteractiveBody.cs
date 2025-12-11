@@ -101,6 +101,9 @@ public class InteractiveBody : MonoBehaviour
     }
 
     public Vector3 followPosition = new Vector3(0f, 0f, 0f);
+    public float currentFrequency = 0f; // for color mapping
+    public float ccValue = 0.7f; // for opacity
+    public float[] activeFrequencies = new float[0]; // for color splitting boids in groups
 
     void FixedUpdate()
     {
@@ -197,19 +200,42 @@ public class InteractiveBody : MonoBehaviour
 
         // Color update
         {
+            int activeCount = 1;
+            if (activeFrequencies.Length > 0)
+                activeCount = activeFrequencies.Length;
+            
+            float defaultHue = 0.5f;
+            if (currentFrequency > 0)
+                defaultHue = Mathf.Clamp01((currentFrequency - 500f) / (2000f - 500f));
+            
             for (int i = 0; i < numberOfSphere; i++)
             {
-                // + This is just pretty trails
+                // splitting into different groups
+                int groupIndex = 0;
+                if (activeCount > 1)
+                    groupIndex = i * activeCount / numberOfSphere;
+                
+                float freq = currentFrequency;
+                if (activeCount > 0 && groupIndex < activeFrequencies.Length)
+                    freq = activeFrequencies[groupIndex];
+                
+                float frequencyHue = defaultHue;
+                if (freq > 0)
+                    frequencyHue = Mathf.Clamp01((freq - 500f) / (2000f - 500f));
+                
                 Gradient gradient = new Gradient();
-                float h = (i / (float)numberOfSphere) % 1f;
+                float h = frequencyHue;
                 float s = 0.45f + bp[i].acceleration.sqrMagnitude / 1000f;
                 float v = 0.98f + bp[i].acceleration.sqrMagnitude / 1000f;
                 Color c = Color.HSVToRGB(h, s, v);
 
+                float expandedCC = ccValue * ccValue * 1.3f;
+                float opacity = Mathf.Lerp(0.1f, 1.5f, Mathf.Clamp01(expandedCC));
+                
                 gradient.SetKeys(
                     new GradientColorKey[] { new GradientColorKey(c, 0.0f),
                                             new GradientColorKey(c, 1f) },
-                    new GradientAlphaKey[] { new GradientAlphaKey(1.0f, 0.0f), new GradientAlphaKey(0.0f, 1.0f) }
+                    new GradientAlphaKey[] { new GradientAlphaKey(opacity, 0.0f), new GradientAlphaKey(0.0f, 1.0f) }
                 );
                 trailRenderer[i].colorGradient = gradient;
             }

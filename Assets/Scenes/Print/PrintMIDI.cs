@@ -87,6 +87,8 @@ public class PrintMIDI : MonoBehaviour
     // Control change: e.g., CC74 = slide (Y axis)
     void OnControlChange(MidiValueControl cc, float value)
     {
+        if (piano != null) 
+            piano.MIDIControlChange(value);
         Debug.Log($"CC         dev={cc.device} cc={cc.controlNumber} value={value:0.000}");
     }
 
@@ -99,6 +101,9 @@ public class PrintMIDI : MonoBehaviour
     // Pitch bend: glide (X axis, pitch shift)
     void OnPitchBend(AxisControl control, float bend)
     {
+        if (piano != null)
+            piano.MIDIPitchBend(bend);
+        
         Debug.Log($"PITCHBEND  dev={control.device.description} bend={bend:0.000}");
     }
 }

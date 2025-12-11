@@ -2,24 +2,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+public struct ActiveNote
+{
+    public float baseFrequency, velocity, timeOn, timeOff, pitchBend;
+}
+
 public class PianoScript : MonoBehaviour
 {
     [SerializeField] InteractiveBody interactiveBody;
     [SerializeField] List<GameObject> PianoKeyObjects = new List<GameObject>();
     [SerializeField] List<KeyCode> keyButtons = new List<KeyCode>();
+    [SerializeField] float semitoneMultiplier = 40f;
     //[SerializeField] List<AudioSource> audioSources = new List<AudioSource>();
 
-    public float attackTime = 0.05f;
-    public float releaseTime = 0.2f;
-    public float yAmplitude = 20f;
-    public float yLerp = 10f; 
+    [Header("ADSR")]
+    public float attackTime = 0.05f, decayTime = 0.1f, sustainLevel = 0.7f, releaseTime = 0.1f;
+    public float yAmplitude = 20f, yLerp = 10f;
     
-    private Vector3[] originalObjScales;
-    private Vector3[] originalObjPositions;
-    private Coroutine[] activeCoroutines;
-    private bool noKeyPressed = false;
-    private float targetY = 0f;
-    private float currentY = 0f;
+    const int totalNotes = 108;
+    ActiveNote[] notes = new ActiveNote[totalNotes]; 
+    
+    Vector3[] originalObjScales, originalObjPositions;
+    Coroutine[] activeCoroutines;
+    float targetY, currentY, currentX = 0f;
+
+    
 
     void Start(){
         originalObjScales = new Vector3[PianoKeyObjects.Count];
@@ -37,160 +44,193 @@ public class PianoScript : MonoBehaviour
     }
 
     void Update(){
-        // Check if any key is currently pressed
-        noKeyPressed = true;
-        for (int i = 0; i < keyButtons.Count; i++){
-            if (Input.GetKey(keyButtons[i])){
-                noKeyPressed = false;
-                break;
-            }
-        }
-        if (noKeyPressed) targetY = 0;
-        else targetY = yAmplitude;
-
+        // stores held notes for color splitting
+        List<float> activeFreqs = new List<float>();
+        float activeFreq = 0f;
+        float latestTime = 0f;
+        int activeNoteIndex = -1;
         
-        // Lerp currentY towards targetY
-        currentY = Mathf.Lerp(currentY, targetY, Time.deltaTime * yLerp);
-        
-        for (int i = 0; i < keyButtons.Count; i++){
-            if (Input.GetKeyDown(keyButtons[i])){
-
-                //setting position for interactive body
-                interactiveBody.followPosition = new Vector3(i * 20f - 80f, currentY, interactiveBody.followPosition.z);
-
-                if (activeCoroutines[i] != null) // makes playing feel smoother
-                {
-                    StopCoroutine(activeCoroutines[i]);
-                }
-                activeCoroutines[i] = StartCoroutine(FadeInAttack(/*audioSources[i], */i));
+        for (int n = 0; n < totalNotes; n++)
+        {
+            if (notes[n].timeOn > 0 && notes[n].timeOff == 0)
+            {
+                float freq = notes[n].baseFrequency * Mathf.Pow(2f, notes[n].pitchBend / 12f);
+                activeFreqs.Add(freq);
             }
-            if (Input.GetKeyUp(keyButtons[i])){
-                if (activeCoroutines[i] != null){
-                    StopCoroutine(activeCoroutines[i]);
-                }
-                activeCoroutines[i] = StartCoroutine(FadeOutRelease(/*audioSources[i], */i));
+            
+            // Find most recent note for position
+            if (notes[n].timeOn > latestTime)
+            {
+                latestTime = notes[n].timeOn;
+                activeNoteIndex = n;
+                activeFreq = notes[n].baseFrequency * Mathf.Pow(2f, notes[n].pitchBend / 12f);
             }
         }
         
-        // Update y position continuously
-        interactiveBody.followPosition = new Vector3(interactiveBody.followPosition.x, currentY, interactiveBody.followPosition.z);
+        // x position of boids is set by frequency, y is set by sliding up and down
+        if (activeFreq > 0)
+        {
+            // set for the octave around 500hz to 2000hz
+            float normalized = (Mathf.Clamp(activeFreq, 500f, 2000f) - 500f) / (2000f - 500f);
+            float targetX = -80f + normalized * (60f - (-80f));
+            currentX = Mathf.Lerp(currentX, targetX, Time.deltaTime * yLerp);
+            float pitchBend = activeNoteIndex >= 0 ? notes[activeNoteIndex].pitchBend : 0f;
+            Debug.Log($"Freq: {activeFreq:F1}Hz, PitchBend: {pitchBend:F2}st, BaseFreq: {notes[activeNoteIndex].baseFrequency:F1}Hz, X: {currentX:F1}, TargetX: {targetX:F1}, Y: {currentY:F1}");
+        }
+        float yPos = 10f + (ccValue * ccValue * 2f - 1f) * 30f;
+        currentY = Mathf.Lerp(currentY, yPos, Time.deltaTime * yLerp);
+        
+        if (interactiveBody != null)
+        {
+            interactiveBody.followPosition = new Vector3(currentX, currentY, 180f);
+            interactiveBody.currentFrequency = activeFreq;
+            interactiveBody.ccValue = ccValue;
+            interactiveBody.activeFrequencies = activeFreqs.ToArray();
+        }
     }
 
-    IEnumerator FadeInAttack(/*AudioSource aS, */int index){
+    IEnumerator FadeInAttack(int i){
         float timer = 0;
-        //aS.volume = 0;
-        //aS.Play();
-        
-        GameObject key = PianoKeyObjects[index];
-        Vector3 ogScale = new Vector3(originalObjScales[index].x, 2f, originalObjScales[index].z);
-        Vector3 ogPosition = new Vector3(originalObjPositions[index].x, originalObjPositions[index].y - 6.5f, originalObjPositions[index].z);
+        GameObject key = PianoKeyObjects[i];
+        Vector3 targetScale = new Vector3(originalObjScales[i].x, 2f, originalObjScales[i].z);
+        Vector3 targetPos = new Vector3(originalObjPositions[i].x, originalObjPositions[i].y - 6.5f, originalObjPositions[i].z);
         
         while (timer < attackTime){
             timer += Time.deltaTime;
-            //aS.volume = Mathf.Lerp(0, 1, timer / attackTime);
-            key.transform.localScale = Vector3.Lerp(key.transform.localScale, ogScale, timer / attackTime);
-            key.transform.localPosition = Vector3.Lerp(key.transform.localPosition, ogPosition, timer / attackTime);
+            float t = timer / attackTime;
+            key.transform.localScale = Vector3.Lerp(key.transform.localScale, targetScale, t);
+            key.transform.localPosition = Vector3.Lerp(key.transform.localPosition, targetPos, t);
             yield return null;
         }
-        
-        // Ensure final values
-        key.transform.localScale = ogScale;
-        key.transform.localPosition = ogPosition;
+        key.transform.localScale = targetScale;
+        key.transform.localPosition = targetPos;
     }
 
-    IEnumerator FadeOutRelease(/*AudioSource aS, */int index){
+    IEnumerator FadeOutRelease(int i){
         float timer = 0;
-        //float currentVolume = aS.volume;
-        GameObject key = PianoKeyObjects[index];
+        GameObject key = PianoKeyObjects[i];
         while (timer < releaseTime){
             timer += Time.deltaTime;
-            //aS.volume = Mathf.Lerp(currentVolume, 0, timer / releaseTime);
-            key.transform.localScale = Vector3.Lerp(key.transform.localScale, originalObjScales[index], timer / releaseTime);
-            key.transform.localPosition = Vector3.Lerp(key.transform.localPosition, originalObjPositions[index], timer / releaseTime);
+            float t = timer / releaseTime;
+            key.transform.localScale = Vector3.Lerp(key.transform.localScale, originalObjScales[i], t);
+            key.transform.localPosition = Vector3.Lerp(key.transform.localPosition, originalObjPositions[i], t);
             yield return null;
         }
-        
-        // Ensure final values
-        key.transform.localScale = originalObjScales[index];
-        key.transform.localPosition = originalObjPositions[index];
-        //aS.Stop();
+        key.transform.localScale = originalObjScales[i];
+        key.transform.localPosition = originalObjPositions[i];
     }
 
-    /*
-    waveFunction acts as the periodic displacement of the speaker cone (sin wave).
-    Normal sin period has 2pi, period = 1/frequency which is 0.1592 Hz. Since this is lower than
-    the minimmum range of perceivable sounds, sin has to be normalized to a period of 1 and then
-    multiplied to get a desired frequency. */
-    float waveFunction(float time, float frequency){
-        return Mathf.Sin(time * 2f * Mathf.PI * frequency);
-    }
+    float onAudioTime, sampleRate, ccValue = 0.707f; // sqrt(0.5) - centers Y at 10
 
-    private float onAudioTime = 0f;
-    private float sampleRate; // cached in start
-
-    /* OnAudioFilterRead generates sound if an AudioSource component is attached. Runs continuously every second. 
-    float[] data is empty at first but is filled with 1000+ audio samples ranging from -1 to 1,
-    -1 is max negative displacement, 0 is the speaker at rest, 1 is max positive displacement. 
-    Each sample is a position of the sound wave at the current exact moment, so playing them together creates continuous sound.
-    int channels specifies the number of audio output channels (automatically set by Unity, most systems use stereo so = 2), 
-    ie 1 = mono, 2 stereo (with channel 0 being left speaker, channel 1 being right speaker). */
-
-    // think of method like a camera: each sample is like an individual frame, 
-    // connecting and playing them quickly together creates a "moving" image 
-    // or in this case a continuous sound
-
-    float frequency = 0;
     void OnAudioFilterRead(float[] data, int channels)
     {
-        if (frequency <= 0)
-        {
-            for (int i = 0; i < data.Length; i++)
-            {
-                data[i] = 0f;
-            }
-            return;
-        }
-        
-        // loop through data array to process each audio sample at a time
         for (int i = 0; i < data.Length; i += channels)
         {
-            // generates sample at this exact moment on the sound wave
-            float sample = waveFunction(onAudioTime, frequency);
-            
-            // writes the value to all channels
-            for (int channel = 0; channel < channels; channel++)
+            float sample = 0f;
+            for (int n = 0; n < totalNotes; n++)
             {
-                data[i + channel] = sample;
+                if (notes[n].timeOn == 0) continue;
+                
+                // Take base freq, then the Pow will convert semitones to frequency multiplier
+                // so sliding left and right will change the note played
+                float freq = notes[n].baseFrequency * Mathf.Pow(2f, notes[n].pitchBend / 12f);
+                float amp = GetEnvelopeAmplitude(n, onAudioTime);
+
+                // boosts velocities from being too low (0.5 floor)
+                float vel = Mathf.Sqrt(notes[n].velocity * 0.3f + 0.5f); 
+                
+                // add on overtone waves to make note sound more "whole"
+                if (amp > 0 && freq > 0)
+                    sample += WaveWithHarmonics(onAudioTime, freq) * amp * vel;
             }
             
-            // move time forward by the duration of one sample 
+            // outputting to channels
+            for (int c = 0; c < channels; c++)
+                data[i + c] = Mathf.Clamp(sample, -1f, 1f);
+            
             onAudioTime += 1f / sampleRate;
         }
     }
+    
+    float WaveWithHarmonics(float time, float freq)
+    {
+        float sample = 0f, sum = 0f;
+        for (int h = 1; h <= 12; h++)
+        {
+            float amp = 1f / h;
+            sample += Mathf.Sin(time * 2f * Mathf.PI * freq * h) * amp;
+            sum += amp;
+        }
+        return sample / sum;
+    }
+    
+    float GetEnvelopeAmplitude(int n, float time)
+    {
+        ActiveNote note = notes[n];
+        float elapsed = time - note.timeOn;
+        
+        if (note.timeOff > 0)
+        {
+            float releaseElapsed = time - note.timeOff;
+            if (releaseElapsed >= releaseTime) return 0f;
+            float releaseStart = GetAmpAtTime(elapsed - releaseElapsed);
+            return Mathf.Lerp(releaseStart, 0f, releaseElapsed / releaseTime);
+        }
+        
+        return GetAmpAtTime(elapsed);
+    }
+    
+    float GetAmpAtTime(float elapsed)
+    {
+        if (elapsed < attackTime) return elapsed / attackTime;
+        if (elapsed < attackTime + decayTime) return Mathf.Lerp(1f, sustainLevel, (elapsed - attackTime) / decayTime);
+        return sustainLevel * (ccValue * ccValue * 2f); // ccValue changes amplitude by sliding up and down
+    }
+    
+    public void MIDIControlChange(float value) 
+    { 
+        ccValue = value; 
+    }
 
-    public void MIDINoteOn(int noteNum, float velocity){
-        frequency = 440f * Mathf.Pow(2f, (noteNum - 69f) / 12f);
-        Debug.Log("calculated frequency: " + frequency);
-
-        int keyIndex = noteNum - 60; 
-        if (keyIndex < 0 || keyIndex >= PianoKeyObjects.Count) return;
-
-        // animate press
-        if (activeCoroutines[keyIndex] != null)
-            StopCoroutine(activeCoroutines[keyIndex]);
-
-        activeCoroutines[keyIndex] = StartCoroutine(FadeInAttack(keyIndex));
+    public void MIDINoteOn(int noteNum, float velocity)
+    {
+        int i = Mathf.Clamp(noteNum - 12, 0, totalNotes - 1);
+        notes[i] = new ActiveNote
+        {
+            baseFrequency = 440f * Mathf.Pow(2f, (noteNum - 69f) / 12f),
+            velocity = Mathf.Clamp01(velocity),
+            timeOn = onAudioTime,
+            timeOff = 0f,
+            pitchBend = notes[i].pitchBend
+        };
+        
+        int keyI = noteNum - 60;
+        if (keyI >= 0 && keyI < PianoKeyObjects.Count)
+        {
+            if (activeCoroutines[keyI] != null) StopCoroutine(activeCoroutines[keyI]);
+            activeCoroutines[keyI] = StartCoroutine(FadeInAttack(keyI));
+        }
     }
 
     public void MIDINoteOff(int noteNum)
     {
-        frequency = 0;
-        int keyIndex = noteNum - 60;
-        if (keyIndex < 0 || keyIndex >= PianoKeyObjects.Count) return;
-
-        if (activeCoroutines[keyIndex] != null)
-            StopCoroutine(activeCoroutines[keyIndex]);
-
-        activeCoroutines[keyIndex] = StartCoroutine(FadeOutRelease(keyIndex));
+        int i = Mathf.Clamp(noteNum - 12, 0, totalNotes - 1);
+        if (notes[i].timeOn > 0) notes[i].timeOff = onAudioTime;
+        
+        int keyI = noteNum - 60;
+        if (keyI >= 0 && keyI < PianoKeyObjects.Count)
+        {
+            if (activeCoroutines[keyI] != null) StopCoroutine(activeCoroutines[keyI]);
+            activeCoroutines[keyI] = StartCoroutine(FadeOutRelease(keyI));
+        }
+    }
+    
+    public void MIDIPitchBend(float bendValue)
+    {
+        float semitones = bendValue * semitoneMultiplier;
+        for (int i = 0; i < totalNotes; i++)
+            if (notes[i].timeOn > 0) notes[i].pitchBend = semitones;
     }
 }
+
+

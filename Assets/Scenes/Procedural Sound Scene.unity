@@ -702,7 +702,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!82 &414756889
 AudioSource:
   m_ObjectHideFlags: 0
@@ -889,7 +889,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!82 &511715748
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1076,7 +1076,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!82 &524504587
 AudioSource:
   m_ObjectHideFlags: 0
@@ -1467,7 +1467,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   G: 1
-  fastforwardConst: 5
+  fastforwardConst: 20
   tRTime: 0.6
   tRStartWidth: 0.5
   tREndWidth: 0.1
@@ -1476,6 +1476,9 @@ MonoBehaviour:
   maxVelocity: 9
   closeDistance: 1000
   followPosition: {x: 0, y: 0, z: 180}
+  currentFrequency: 0
+  ccValue: 0.7
+  activeFrequencies: []
 --- !u!4 &685549700
 Transform:
   m_ObjectHideFlags: 0
@@ -2038,7 +2041,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!82 &959957356
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2399,7 +2402,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!82 &1125762209
 AudioSource:
   m_ObjectHideFlags: 0
@@ -2843,7 +2846,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!82 &1269225953
 AudioSource:
   m_ObjectHideFlags: 0
@@ -3103,7 +3106,10 @@ MonoBehaviour:
   - {fileID: 959957355}
   - {fileID: 1269225952}
   keyButtons: 3100000032000000330000003400000035000000360000003700000038000000
+  semitoneMultiplier: 48.2
   attackTime: 0.1
+  decayTime: 0.1
+  sustainLevel: 0.7
   releaseTime: 0.25
   yAmplitude: 20
   yLerp: 10
@@ -3670,7 +3676,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!82 &1436181641
 AudioSource:
   m_ObjectHideFlags: 0
@@ -3895,7 +3901,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!82 &1658319466
 AudioSource:
   m_ObjectHideFlags: 0
