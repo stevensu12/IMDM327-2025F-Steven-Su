@@ -120,7 +120,7 @@ public class PianoScript : MonoBehaviour
         key.transform.localPosition = originalObjPositions[i];
     }
 
-    float onAudioTime, sampleRate, ccValue = 0.707f; // sqrt(0.5) - centers Y at 10
+    float onAudioTime, sampleRate, ccValue = 0.707f; // default cc value to center y value around middle of screen
 
     void OnAudioFilterRead(float[] data, int channels)
     {

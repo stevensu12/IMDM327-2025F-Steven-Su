@@ -200,6 +200,7 @@ public class InteractiveBody : MonoBehaviour
 
         // Color update
         {
+            // count how many unique keys are currently held
             int activeCount = 1;
             if (activeFrequencies.Length > 0)
                 activeCount = activeFrequencies.Length;
@@ -210,28 +211,33 @@ public class InteractiveBody : MonoBehaviour
             
             for (int i = 0; i < numberOfSphere; i++)
             {
-                // splitting into different groups
+                // splitting boids into different groups ie if 2 keys pressed, half get one color half get another
                 int groupIndex = 0;
                 if (activeCount > 1)
                     groupIndex = i * activeCount / numberOfSphere;
                 
+                // get frequency for this group
                 float freq = currentFrequency;
                 if (activeCount > 0 && groupIndex < activeFrequencies.Length)
                     freq = activeFrequencies[groupIndex];
                 
+                // convert frequency to color hue using similar range of MIDI board
                 float frequencyHue = defaultHue;
                 if (freq > 0)
                     frequencyHue = Mathf.Clamp01((freq - 500f) / (2000f - 500f));
                 
                 Gradient gradient = new Gradient();
-                float h = frequencyHue;
-                float s = 0.45f + bp[i].acceleration.sqrMagnitude / 1000f;
+                
+                float h = frequencyHue; // change hue based on frequency (hue value is color wheel from 0-1)
+                float s = 0.45f + bp[i].acceleration.sqrMagnitude / 1000f; 
                 float v = 0.98f + bp[i].acceleration.sqrMagnitude / 1000f;
                 Color c = Color.HSVToRGB(h, s, v);
 
+                // change the opacity depending on ccValue (sliding up and down)
                 float expandedCC = ccValue * ccValue * 1.3f;
                 float opacity = Mathf.Lerp(0.1f, 1.5f, Mathf.Clamp01(expandedCC));
                 
+                // Gradient: color stays same, but alpha fades from opacity to 0 (trail effect)
                 gradient.SetKeys(
                     new GradientColorKey[] { new GradientColorKey(c, 0.0f),
                                             new GradientColorKey(c, 1f) },
